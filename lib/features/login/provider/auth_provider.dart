@@ -87,6 +87,8 @@ class AuthProvider extends ChangeNotifier {
           });
           log("Data is :--$document ");
           return true;
+        } else {
+          print("Already loggined....");
         }
       }
     }

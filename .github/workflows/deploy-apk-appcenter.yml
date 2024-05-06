@@ -1,0 +1,45 @@
+name: Deploy APK to App Center
+on: workflow_dispatch
+jobs:
+  build_android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.13.9
+      
+      - name: Pub clean
+        run: flutter clean
+
+      - name: Pub Get
+        run: flutter pub get
+
+      - name: Build apk
+        run: flutter build apk --release
+
+      - name: APK upload
+        uses: actions/upload-artifact@v4
+        with:
+          name:  build-artifacts.apk  # Include PR number in name
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 'v20.12.2'
+
+      - name: Update npm packages
+        run: |
+          npm install formidable@latest
+          npm install superagent@latest
+
+      - name: Install app center
+        run: npm install -g appcenter-cli
+
+      - name: Upload APK to App Center
+        run: appcenter distribute release -f build/app/outputs/flutter-apk/app-release.apk -a sumitghadi15-gmail.com/chattie --group Public --token ${{secrets.APP_CENTER_TOKEN}}
